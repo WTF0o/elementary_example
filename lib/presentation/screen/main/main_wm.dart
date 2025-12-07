@@ -3,7 +3,6 @@ import 'package:elementary_test/domain/model/cars_model.dart';
 import 'package:elementary_test/presentation/screen/main/main_model.dart';
 import 'package:elementary_test/presentation/screen/main/main_screen.dart';
 import 'package:elementary_test/presentation/widget_model_interface/favorite_interface.dart';
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 import 'main_listenable_model.dart';
@@ -12,9 +11,6 @@ import 'main_listenable_model.dart';
 class MainWidgetModel extends WidgetModel<MainScreen, MainModel> implements IFavoriteWidgetModel {
   final mainListenableModel = MainListenableModel();
   MainWidgetModel(super.model);
-
-  ValueListenable<Map<int, bool>> get favoriteStates => mainListenableModel.favoriteStates;
-
   @override
   void initWidgetModel() {
     mainListenableModel.cars.loading();
@@ -22,7 +18,6 @@ class MainWidgetModel extends WidgetModel<MainScreen, MainModel> implements IFav
         .getCars()
         .then((cars) {
           mainListenableModel.cars.content(cars);
-          mainListenableModel.initFavoriteStates(cars.adverts);
         })
         .catchError((error) {
           mainListenableModel.cars.error(error);
@@ -30,15 +25,14 @@ class MainWidgetModel extends WidgetModel<MainScreen, MainModel> implements IFav
 
     model.listenFavoriteCars().then((listenable) {
       listenable.listen((event) {
-        final advertId = int.tryParse(event.key.toString());
-        if (advertId != null) {
-          final isFavorite = !event.deleted;
-          // Обновляем только состояние избранного, не пересобираем весь список
-          mainListenableModel.updateFavoriteState(advertId, isFavorite);
-          // Обновляем данные в модели для консистентности
-          mainListenableModel.cars.value.data?.adverts
-              .where((advert) => advert.id == advertId)
-              .forEach((advert) => advert.isFavorite = isFavorite);
+        mainListenableModel.cars.value.data?.adverts
+                .where((advert) => advert.id.toString() == event.key)
+                .first
+                .isFavorite =
+            !event.deleted;
+        final currentState = mainListenableModel.cars.value.data;
+        if (currentState != null) {
+          mainListenableModel.cars.content(currentState);
         }
       });
     });

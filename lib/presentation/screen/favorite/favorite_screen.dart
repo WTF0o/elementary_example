@@ -25,7 +25,8 @@ class FavoriteScreen extends ElementaryWidget<FavoriteWidgetModel> {
         ),
       ),
       builder: (context, state) {
-        if (state == null || state.isEmpty) return const SizedBox.shrink();
+        if (state == null || state.isEmpty)
+          return const Center(child: Text('Нет избранных объявлений'));
         return ListView.separated(
           padding: const EdgeInsets.all(12),
           itemCount: state.length,

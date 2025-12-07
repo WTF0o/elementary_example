@@ -185,6 +185,7 @@ class AdvertCard extends StatelessWidget {
               ),
               child: SizedBox(
                 width: 120,
+                height: 150,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
